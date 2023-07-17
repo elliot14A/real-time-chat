@@ -1,6 +1,9 @@
+import { fectchRedis, fectchRedis as fetchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { addFriendValidator } from "@/lib/validations/add-friend";
 import { getServerSession } from "next-auth";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
@@ -10,17 +13,10 @@ export async function POST(req: Request) {
     }
     const body = await req.json();
     const { email: emailToAdd } = addFriendValidator.parse(body.email);
-    const res = await fetch(
-      `${process.env.UPSTASH_REDIS_REST_URL}/get/user:email:${emailToAdd}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-        },
-        cache: "no-store",
-      }
-    );
-    const data = (await res.json()) as { result: string };
-    const idToAdd = data.result;
+    const idToAdd = (await fectchRedis(
+      "get",
+      `user:email:${emailToAdd}`
+    )) as string;
 
     if (!idToAdd) {
       return new Response("This person does not exist", { status: 404 });
@@ -29,6 +25,34 @@ export async function POST(req: Request) {
     if (idToAdd === session.user.id) {
       return new Response("You cannot add yourself", { status: 400 });
     }
-    console.log("idToAdd", idToAdd);
-  } catch (err) { }
+
+    const alreadyAdded = (await fetchRedis(
+      "sismember",
+      `user:${idToAdd}:incoming_friend_requests`,
+      session.user.id
+    )) as 0 | 1;
+
+    if (alreadyAdded) {
+      return new Response("You already sent a request", { status: 400 });
+    }
+
+    const alreadyFriends = (await fectchRedis(
+      "sismember",
+      `user:${session.user.id}:friends`,
+      idToAdd
+    )) as 0 | 1;
+
+    if (alreadyFriends) {
+      return new Response("You are already friends", { status: 400 });
+    }
+
+    db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
+
+    return new Response("Friend request sent");
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return new Response("invalid request paylod", { status: 400 });
+    }
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

@@ -13,7 +13,6 @@ const Page: FC<PageProps> = () => {
   const loginWithGoogle = async () => {
     setIsLoading(true);
     try {
-      console.log("clicked");
       await signIn("google");
     } catch (error) {
       toast.error("Something went wrong");
