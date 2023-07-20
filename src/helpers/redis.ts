@@ -1,7 +1,7 @@
 const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
 const updateSecret = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-type Command = "get" | "zrange" | "sismember" | "smember";
+type Command = "get" | "zrange" | "sismember" | "smembers";
 
 export const fectchRedis = async (
   command: Command,
