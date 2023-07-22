@@ -1,6 +1,8 @@
 import { FriendRequestSidebarOption } from "@/components/FriendRequestSidebarOption";
+import { SidebarChatList } from "@/components/SidebarChatList";
 import { SignOutButton } from "@/components/SignOutButton";
 import { Icon, Icons } from "@/components/ui/icons";
+import { getFriendById } from "@/helpers/getfriendbyid";
 import { fectchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
@@ -38,18 +40,24 @@ const Layout = async ({ children }: LayoutProps) => {
       `user:${session.user.id}:incoming_friend_requests`
     )) as User[]
   ).length;
+
+  const friends = await getFriendById(session.user.id);
   return (
-    <div className="w-max flex h-screen">
-      <div className="w-full h-full flex max-w-xs grow flex-col gap-y-5 overflow-auto border-r border-gray-200 bg-white px-6">
+    <div className="w-full flex h-screen">
+      <div className="w-full h-full flex max-w-xs grow flex-col gap-y-5 overflow-auto border-r border-black bg-white px-6">
         <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
-          <Icons.Logo className="h-8 w-auto text-red-600" />
+          <Icons.Logo className="h-8 w-auto text-black" />
         </Link>
-        <div className="text-xs font-semibold leading-6 text-gray-400">
-          Your Chats
-        </div>
+        {friends.length > 0 ? (
+          <div className="text-xs font-semibold leading-6 text-gray-400">
+            Your Chats
+          </div>
+        ) : null}
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
-            <li>List of Chats</li>
+            <li>
+              <SidebarChatList friends={friends} sessionID={session.user.id} />
+            </li>
             <li>
               <div className="text-xs font-semibold leading-6 text-gray-400">
                 Overview
@@ -61,9 +69,9 @@ const Layout = async ({ children }: LayoutProps) => {
                     <li key={opt.id}>
                       <Link
                         href={opt.href}
-                        className="text-gray-700 hover:text-red-600 hover:bg-gray-50 group flex gap-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                        className="text-gray-700 hover:text-black hover:border-black hover:border group flex gap-3 rounded-md p-2 text-sm leading-6 font-semibold"
                       >
-                        <span className="text-gray-400 border-gray-200 group-hover:text-red-600 group-hover:border-red-600 flex h-6 w-6 shrink-0 justify-center items-center rounded-lg border text-[0.625rem] font-medium bg-white">
+                        <span className="text-gray-400 border-gray-200 group-hover:text-black group-hover:border-black flex h-6 w-6 shrink-0 justify-center items-center rounded-lg border text-[0.625rem] font-medium bg-white">
                           <Icon className="h-4 w-4" />
                         </span>
                         <span className="truncate">{opt.name}</span>
@@ -71,13 +79,13 @@ const Layout = async ({ children }: LayoutProps) => {
                     </li>
                   );
                 })}
+                <li>
+                  <FriendRequestSidebarOption
+                    sessionId={session.user.id}
+                    initialUnRequestCount={unseenRequests}
+                  />
+                </li>
               </ul>
-            </li>
-            <li>
-              <FriendRequestSidebarOption
-                sessionId={session.user.id}
-                initialUnRequestCount={unseenRequests}
-              />
             </li>
             <li className="-mx-9 mt-auto flex items-center">
               <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-600">

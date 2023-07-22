@@ -15,10 +15,11 @@ export const fectchRedis = async (
     cache: "no-store",
   });
 
+  const data = await response.json();
+  console.log(data);
   if (!response.ok) {
     throw new Error(`Redis fetch failed, ${response.status}`);
   }
 
-  const data = await response.json();
   return data.result;
 };
