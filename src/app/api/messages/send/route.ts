@@ -1,6 +1,8 @@
 import { fectchRedis } from "@/helpers/redis";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth";
 
@@ -15,9 +17,7 @@ export const POST = async (req: Request) => {
       return new Response("Unauthorized", { status: 401 });
     }
     const [userId1, userId2] = chatId.split("--");
-    console.log(session.user.id === userId2, userId2, userId1);
     if (session.user.id !== userId1 && session.user.id !== userId2) {
-      console.log("here 2");
       return new Response("Unauthorized", { status: 401 });
     }
     const friendId = session.user.id === userId2 ? userId1 : userId2;
@@ -27,7 +27,6 @@ export const POST = async (req: Request) => {
     )) as string[];
     const isFriend = friendList.includes(friendId);
     if (!isFriend) {
-      console.log("here 1");
       return new Response("Unauthorized", { status: 401 });
     }
     const senderString = (await fectchRedis(
@@ -43,6 +42,20 @@ export const POST = async (req: Request) => {
       text,
       timestamp,
     };
+    await pusherServer.trigger(
+      toPusherKey(`chat:${chatId}`),
+      "new_message",
+      message
+    );
+    await pusherServer.trigger(
+      toPusherKey(`user:${friendId}:chats`),
+      "new_unseen_message",
+      {
+        ...message,
+        senderName: sender.name,
+        senderImg: sender.image,
+      }
+    );
 
     await db.zadd(`chat:${chatId}:messages`, {
       score: timestamp,

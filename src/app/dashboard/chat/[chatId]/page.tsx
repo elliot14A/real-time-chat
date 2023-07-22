@@ -51,9 +51,9 @@ const Page: FC<PageProps> = async ({ params }) => {
   const messages = await getChatMessages(chatId);
 
   return (
-    <div className="flex-1 justify-between flex flex-col h-full max-h-[calc(100vh-6rem)]">
+    <div className="flex-1  justify-between flex flex-col h-full max-h-[calc(100vh-6rem)]">
       <div className="flex justify-between py-3 border-b border-black">
-        <div className="relative flex items-center space-x-4 ">
+        <div className="ml-4 relative flex items-center space-x-4 ">
           <div className="relative">
             <div className="relative w-8 h-8">
               <Image
@@ -77,6 +77,7 @@ const Page: FC<PageProps> = async ({ params }) => {
       </div>
       <Messages
         initialMessages={messages}
+        chatId={chatId}
         sessionId={session.user.id}
         sessionImg={session.user.image}
         chatPartner={chatPartner}

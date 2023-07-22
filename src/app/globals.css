@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
 .scrollbar-w-2::-webkit-scrollbar {
   width: 0.25rem;
   height: 0.25rem;
@@ -9,14 +15,14 @@
 
 .scrollbar-track-red-lighter::-webkit-scrollbar-track {
   --bg-opacity: 1;
-  background-color: #ff6b6b;
-  background-color: rgba(253, 210, 191, var(--bg-opacity));
+  background-color: #ffffff;
+  background-color: rgba(256, 256, 256, var(--bg-opacity));
 }
 
 .scrollbar-thumb-red::-webkit-scrollbar-thumb {
   --bg-opacity: 1;
-  background-color: #df1313;
-  background-color: rgba(215, 19, 19, var(--bg-opacity));
+  background-color: #000000;
+  background-color: rgba(0, 0, 0, var(--bg-opacity));
 }
 
 .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {

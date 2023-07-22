@@ -14,7 +14,6 @@ export const getFriendById = async (id: string): Promise<User[]> => {
     );
     return friends;
   } catch (error) {
-    console.error(error);
     return [];
   }
 };

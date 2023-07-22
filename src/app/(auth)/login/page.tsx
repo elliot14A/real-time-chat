@@ -26,7 +26,7 @@ const Page: FC<PageProps> = () => {
       <div className="flex min-h-full justify-center items-center py-12 px- 4">
         <div className="max-w-md w-full space-y-8 flex flex-col">
           <div className="flex flex-col items-center">
-            <Icons.Logo className="h-10 w-10 text-red-600" />
+            <Icons.Logo className="h-10 w-10 text-black" />
             <h2 className="mt-6 text-center text-3xl font-semibold tracking-tight text-gray-950">
               Sign in to your account
             </h2>

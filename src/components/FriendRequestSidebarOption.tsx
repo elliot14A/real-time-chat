@@ -1,7 +1,9 @@
 "use client";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import { User } from "lucide-react";
 import Link from "next/link";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
 interface FriendRequestSidebarOptionProps {
   sessionId: string;
@@ -10,10 +12,25 @@ interface FriendRequestSidebarOptionProps {
 
 export const FriendRequestSidebarOption: FC<
   FriendRequestSidebarOptionProps
-> = ({ initialUnRequestCount }) => {
+> = ({ initialUnRequestCount, sessionId }) => {
   const [unSeenRequests, setUnSeenRequests] = useState<number>(
     initialUnRequestCount
   );
+  useEffect(() => {
+    pusherClient.subscribe(
+      toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+    );
+    function friendRequestHandler() {
+      setUnSeenRequests((prev) => prev + 1);
+    }
+    pusherClient.bind("incoming_friend_requests", friendRequestHandler);
+    return () => {
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+      );
+      pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+    };
+  }, [sessionId]);
   return (
     <Link
       href="/dashboard/requests"
@@ -24,7 +41,7 @@ export const FriendRequestSidebarOption: FC<
       </div>
       <p className="truncate">Friend Request</p>
       {unSeenRequests > 0 ? (
-        <div className="rounded-full w-5 h-5 text-xs items-center justify-center bg-red-600 text-white flex">
+        <div className="rounded-full w-5 h-5 text-xs items-center justify-center bg-black text-white flex">
           {unSeenRequests}
         </div>
       ) : (

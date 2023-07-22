@@ -42,10 +42,15 @@ const Layout = async ({ children }: LayoutProps) => {
   ).length;
 
   const friends = await getFriendById(session.user.id);
+  const logoText = "Let's Chat";
   return (
     <div className="w-full flex h-screen">
       <div className="w-full h-full flex max-w-xs grow flex-col gap-y-5 overflow-auto border-r border-black bg-white px-6">
-        <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
+        <Link
+          href="/dashboard"
+          className="flex gap-4 h-16 shrink-0 items-center"
+        >
+          <p className="text-3xl font-bold ">{logoText}</p>
           <Icons.Logo className="h-8 w-auto text-black" />
         </Link>
         {friends.length > 0 ? (
@@ -108,7 +113,7 @@ const Layout = async ({ children }: LayoutProps) => {
                     {session?.user.email}
                   </span>
                 </div>
-                <SignOutButton className="flex-1 h-full aspect-square text-slate-800 hover:text-white hover:bg-red-600" />
+                <SignOutButton className="flex-1 h-full aspect-square text-slate-800 hover:text-white hover:bg-black" />
               </div>
             </li>
           </ul>

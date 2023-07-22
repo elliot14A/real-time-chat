@@ -1,9 +1,11 @@
 "use client";
 
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import axios from "axios";
 import { Check, UserPlus2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
 interface FriendRequestProps {
   incomingFriendRequests: IncomingFriendRequest[];
@@ -17,6 +19,22 @@ export const FriendRequests: FC<FriendRequestProps> = ({
   const [incomingRequests, setIncomingRequests] = useState<
     IncomingFriendRequest[]
   >(incomingFriendRequests);
+
+  useEffect(() => {
+    pusherClient.subscribe(
+      toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+    );
+    function friendRequestHandler(data: IncomingFriendRequest) {
+      setIncomingRequests((prev) => [...prev, data]);
+    }
+    pusherClient.bind("incoming_friend_requests", friendRequestHandler);
+    return () => {
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${sessionId}:incoming_friend_requests`)
+      );
+      pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+    };
+  }, [sessionId]);
 
   const router = useRouter();
 
@@ -38,7 +56,7 @@ export const FriendRequests: FC<FriendRequestProps> = ({
   return (
     <div>
       {incomingRequests.length === 0 ? (
-        <p className="font-semibold text-sm text-zinc-500">
+        <p className="w-full h-full font-semibold text-sm text-zinc-500">
           Woooo How empty....!
         </p>
       ) : (
@@ -49,15 +67,15 @@ export const FriendRequests: FC<FriendRequestProps> = ({
               <p className="font-medium text-sm">{req.senderEmail}</p>
               <button
                 onClick={() => acceptFriendRequest(req.senderId)}
-                className="w-8 h-8 bg-red-500 rounded-full hover:bg-red-600 grid place-items-center transition hover:shadow-md "
+                className="w-8 h-8 bg-black rounded-full grid place-items-center transition"
               >
                 <Check className="font-semibold text-white h-3/4 w-3/4" />
               </button>
               <button
                 onClick={() => denyFriendRequest(req.senderId)}
-                className="w-8 h-8 bg-black rounded-full grid place-items-center transition hover:shadow-md "
+                className="w-8 h-8 border border-black bg-white text-black rounded-full grid place-items-center transition"
               >
-                <X className="font-semibold text-white h-3/4 w-3/4" />
+                <X className="font-semibold text-black h-3/4 w-3/4" />
               </button>
             </div>
           </>

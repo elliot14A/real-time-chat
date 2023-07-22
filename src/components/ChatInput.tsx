@@ -18,13 +18,11 @@ export const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
     if (!input) return;
     setIsLoading(true);
     try {
-      console.log("input", input);
       await axios.post("/api/messages/send", {
         text: input,
         chatId,
       });
       setInput("");
-      console.log("input", input);
     } catch (e) {
       toast.error("Something went wrong");
     } finally {
